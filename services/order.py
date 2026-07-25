@@ -1,24 +1,25 @@
 from django.db.models import QuerySet
+from datetime import datetime
 from django.db import transaction
+from django.contrib.auth import get_user_model
 from db.models import Order, Ticket
-from services.user import get_user  # <-- Додаємо імпорт функції
 
 
 @transaction.atomic
 def create_order(
     tickets: list[dict],
-    user_id: int = None,
-    username: str = None,
+    username: str,
     date: str = None
 ) -> Order:
-    # Замінюємо прямий запит User.objects.get(...) на виклик функції
-    user = get_user(user_id) if user_id else get_user(
-        username)  # Або просто get_user(user_id), залежно від твоїх параметрів
+    user_model = get_user_model()
+    # Шукаємо користувача безпосередньо за username
+    user = user_model.objects.get(username=username)
 
     order = Order.objects.create(user=user)
 
     if date:
-        order.created_at = date
+        # Парсимо рядок у справжній об'єкт datetime
+        order.created_at = datetime.strptime(date, "%Y-%m-%d %H:%M")
         order.save()
 
     for ticket_data in tickets:

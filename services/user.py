@@ -24,13 +24,15 @@ def create_user(
     )
 
 
-def get_user(user_id: int) -> Any:
-    return get_user_model().objects.get(id=user_id)
+def get_user(user_id: int = None, username: str = None) -> Any:
+    user_model = get_user_model()
+    if username:
+        return user_model.objects.get(username=username)
+    return user_model.objects.get(id=user_id)
 
 
 def update_user(user_id: int, **kwargs) -> Any:
-    # Використовуємо функцію get_user замість прямого запиту до БД (вимога #8)
-    user = get_user(user_id)
+    user = get_user(user_id=user_id)
 
     for key, value in kwargs.items():
         if key == "password":
