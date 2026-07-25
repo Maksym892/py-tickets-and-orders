@@ -22,3 +22,19 @@ def create_user(
         password=password,
         **kwargs
     )
+
+
+def get_user(user_id: int) -> Any:
+    user_model = get_user_model()
+    return user_model.objects.get(id=user_id)
+
+
+def update_user(user_id: int, **kwargs) -> Any:
+    user_model = get_user_model()
+    user = user_model.objects.get(id=user_id)
+
+    for key, value in kwargs.items():
+        setattr(user, key, value)
+
+    user.save()
+    return user

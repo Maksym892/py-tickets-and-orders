@@ -72,8 +72,11 @@ class Order(models.Model):
         related_name="orders"
     )
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self) -> str:
-        return f"{self.created_at}"
+        return f"<Order: {self.created_at}>"
 
 
 class Ticket(models.Model):
@@ -91,10 +94,21 @@ class Ticket(models.Model):
     seat = models.IntegerField()
 
     def clean(self) -> None:
+        hall = self.movie_session.cinema_hall
         if not 1 <= self.row <= self.movie_session.cinema_hall.rows:
-            raise ValidationError({"row": "too large"})
+            raise ValidationError({
+                "row": [
+                    "row number must be in available range: "
+                    f"(1, rows): (1, {hall.rows})"
+                ]
+            })
         if not 1 <= self.seat <= self.movie_session.cinema_hall.seats_in_row:
-            raise ValidationError({"seat": "too large"})
+            raise ValidationError({
+                "seat": [
+                    "seat number must be in available range: "
+                    f"(1, seats_in_row): (1, {hall.seats_in_row})"
+                ]
+            })
 
     def save(self, *args, **kwargs) -> None:
         self.full_clean()
@@ -102,8 +116,9 @@ class Ticket(models.Model):
 
     def __str__(self) -> str:
         return (
-            f"{self.movie_session.movie.title} {self.movie_session.show_time} "
-            f"(row: {self.row}, seat: {self.seat})"
+            f"<Ticket: {self.movie_session.movie.title} "
+            f"{self.movie_session.show_time} "
+            f"(row: {self.row}, seat: {self.seat})>"
         )
 
     class Meta:
