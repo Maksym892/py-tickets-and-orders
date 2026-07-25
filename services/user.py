@@ -34,7 +34,10 @@ def update_user(user_id: int, **kwargs) -> Any:
     user = user_model.objects.get(id=user_id)
 
     for key, value in kwargs.items():
-        setattr(user, key, value)
+        if key == "password":
+            user.set_password(value)
+        else:
+            setattr(user, key, value)
 
     user.save()
     return user
